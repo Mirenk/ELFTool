@@ -101,8 +101,8 @@ typedef struct elf32_shdr {
   Elf32_Word	sh_entsize;
 } Elf32_Shdr;
 """
-class ELF32_Shdr(Structure):
-  __fields__ = (
+class Elf32_Shdr(Structure):
+  _fields_ = (
     ('sh_name', c_uint32),
     ('sh_type', c_uint32),
     ('sh_flags', c_uint32),
@@ -130,8 +130,8 @@ typedef struct elf64_shdr {
   Elf64_Xword sh_entsize;	/* Entry size if section holds table */
 } Elf64_Shdr;
 """
-class ELF64_Shdr(Structure):
-  __fields__ = (
+class Elf64_Shdr(Structure):
+  _fields_ = (
     ('sh_name', c_uint32),
     ('sh_type', c_uint32),
     ('sh_flags', c_uint64),

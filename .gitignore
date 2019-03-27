@@ -1,0 +1,7 @@
+7shi-elf-dyn/
+__pycache__/
+*.c
+*.h
+*.so
+test1
+checksec
