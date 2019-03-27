@@ -49,9 +49,22 @@ def readShdr(filepath, bits, ehdr):
             del shdr
     return shdrtable
 
-#TODO WIP
-def stripelf(filepath):
-    print("please impl me!")
+def readstr(filepath, offset, index):
+    if index == 0:
+        return b''
+    with open(filepath, "rb") as f:
+        f.seek(offset + index)
+        string = b''
+        while True:
+            chr = f.read(1)
+            if chr != b'\x00':
+                string += chr
+            else:
+                break
+    return string
+
+#def stripelf(filepath, ehdr, shdr):
+    
 
 if __name__ == "__main__":
     print("path?")
@@ -68,5 +81,5 @@ if __name__ == "__main__":
     shdrtable = readShdr(filepath, bits, ehdr)
     print("==== Section Header List ====")
     for i in range(ehdr.e_shnum):
-        print("{}: {}".format(i, hex(shdrtable[i].sh_addr)))
+        print("{}: {}".format(i, readstr(filepath, shdrtable[ehdr.e_shstrndx].sh_offset, shdrtable[i].sh_name).decode('utf-8')))
     
