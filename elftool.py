@@ -49,7 +49,6 @@ def readShdr(filepath, bits, ehdr):
             del shdr
     return shdrtable
 
-"""
 def readPhdr(filepath, bits, ehdr):
     phdrtable = []
     if bits != 32 and bits != 64:
@@ -63,10 +62,9 @@ def readPhdr(filepath, bits, ehdr):
                 phdr = Elf64_Phdr()
             buffer = io.BytesIO(f.read(ehdr.e_shentsize))
             buffer.readinto(phdr)
-            shdrtable.append(phdr)
+            phdrtable.append(phdr)
             del phdr
     return phdrtable
-"""
 
 def readstr(filepath, offset, index):
     if index == 0:
@@ -112,11 +110,6 @@ if __name__ == "__main__":
         except FileNotFoundError:
             print("File not found. Try again.")
     ehdr = readEhdr(filepath, bits)
-    print("Start of program headers: {} (bytes into file)".format(ehdr.e_phoff))
-    print("Start of section headers: {} (bytes into file)".format(ehdr.e_shoff))
     shdrtbl = readShdr(filepath, bits, ehdr)
-    print("==== Section Header List ====")
-    for i in range(ehdr.e_shnum):
-        print("{}: {}".format(i, readstr(filepath, shdrtbl[ehdr.e_shstrndx].sh_offset, shdrtbl[i].sh_name).decode('utf-8')))
     stripelf(filepath, ehdr, shdrtbl)
     
