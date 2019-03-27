@@ -27,22 +27,22 @@ typedef struct elf32_hdr{
 } Elf32_Ehdr;
 """
 class Elf32_Ehdr(Structure):
-    _fields_ = (
-        ('e_ident', c_char * 16),
-        ('e_type', c_uint16),
-        ('e_machine', c_uint16),
-        ('e_version', c_uint32),
-        ('e_entry', c_uint32),
-        ('e_phoff', c_uint32),
-        ('e_shoff', c_uint32),
-        ('e_flags', c_uint32),
-        ('e_ehsize', c_uint16),
-        ('e_phentsize', c_uint16),
-        ('e_phnum', c_uint16),
-        ('e_shentsize', c_uint16),
-        ('e_shnum', c_uint16),
-        ('e_shstrndx', c_uint16)
-    )
+  _fields_ = (
+    ('e_ident', c_char * 16),
+    ('e_type', c_uint16),
+    ('e_machine', c_uint16),
+    ('e_version', c_uint32),
+    ('e_entry', c_uint32),
+    ('e_phoff', c_uint32),
+    ('e_shoff', c_uint32),
+    ('e_flags', c_uint32),
+    ('e_ehsize', c_uint16),
+    ('e_phentsize', c_uint16),
+    ('e_phnum', c_uint16),
+    ('e_shentsize', c_uint16),
+    ('e_shnum', c_uint16),
+    ('e_shstrndx', c_uint16)
+  )
 
 # 64bit
 """
@@ -66,22 +66,22 @@ typedef struct elf64_hdr {
 } Elf64_Ehdr;
 """
 class Elf64_Ehdr(Structure):
-    _fields_ = (
-        ('e_ident', c_char * 16),
-        ('e_type', c_uint16),
-        ('e_machine', c_uint16),
-        ('e_version', c_uint32),
-        ('e_entry', c_uint64),
-        ('e_phoff', c_uint64),
-        ('e_shoff', c_uint64),
-        ('e_flags', c_uint32),
-        ('e_ehsize', c_uint16),
-        ('e_phentsize', c_uint16),
-        ('e_phnum', c_uint16),
-        ('e_shentsize', c_uint16),
-        ('e_shnum', c_uint16),
-        ('e_shstrndx', c_uint16)
-    )
+  _fields_ = (
+    ('e_ident', c_char * 16),
+    ('e_type', c_uint16),
+    ('e_machine', c_uint16),
+    ('e_version', c_uint32),
+    ('e_entry', c_uint64),
+    ('e_phoff', c_uint64),
+    ('e_shoff', c_uint64),
+    ('e_flags', c_uint32),
+    ('e_ehsize', c_uint16),
+    ('e_phentsize', c_uint16),
+    ('e_phnum', c_uint16),
+    ('e_shentsize', c_uint16),
+    ('e_shnum', c_uint16),
+    ('e_shstrndx', c_uint16)
+  )
 
 # ======================================
 # Section Header Struct
