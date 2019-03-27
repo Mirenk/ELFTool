@@ -49,6 +49,25 @@ def readShdr(filepath, bits, ehdr):
             del shdr
     return shdrtable
 
+"""
+def readPhdr(filepath, bits, ehdr):
+    phdrtable = []
+    if bits != 32 and bits != 64:
+        raise ELFToolError('readPhdr: Invalid parameter')
+    with open(filepath, "rb") as f:
+        f.seek(ehdr.e_phoff)
+        for i in range(ehdr.e_shnum):
+            if bits == 32:
+                phdr = Elf32_Phdr()
+            else:
+                phdr = Elf64_Phdr()
+            buffer = io.BytesIO(f.read(ehdr.e_shentsize))
+            buffer.readinto(phdr)
+            shdrtable.append(phdr)
+            del phdr
+    return phdrtable
+"""
+
 def readstr(filepath, offset, index):
     if index == 0:
         return b''
@@ -63,8 +82,25 @@ def readstr(filepath, offset, index):
                 break
     return string
 
-#def stripelf(filepath, ehdr, shdr):
-    
+def stripelf(filepath, ehdr, shdrtbl):
+    with open(filepath, "rb") as f:
+        # ELF Header
+        buffer = f.read(ehdr.e_ehsize)
+        with open(filepath + '_ehdr', "wb") as elfheader:
+            elfheader.write(buffer)
+        # Program Header Table
+        buffer = f.read(ehdr.e_phentsize * ehdr.e_phnum)
+        with open(filepath + '_phdrtbl', "wb") as phdrtbl:
+            phdrtbl.write(buffer)
+        # Sections
+        for i in range(1, ehdr.e_shnum):
+            buffer = f.read(shdrtbl[i].sh_size)
+            with open(filepath + '_' + readstr(filepath, shdrtbl[ehdr.e_shstrndx].sh_offset, shdrtbl[i].sh_name).decode('utf-8'), "wb") as section:
+                section.write(buffer)
+        # Section Header Table
+        buffer = f.read(ehdr.e_shentsize * ehdr.e_shnum)
+        with open(filepath + '_shdrtbl', "wb") as shdrtbl:
+            shdrtbl.write(buffer)    
 
 if __name__ == "__main__":
     print("path?")
@@ -78,8 +114,9 @@ if __name__ == "__main__":
     ehdr = readEhdr(filepath, bits)
     print("Start of program headers: {} (bytes into file)".format(ehdr.e_phoff))
     print("Start of section headers: {} (bytes into file)".format(ehdr.e_shoff))
-    shdrtable = readShdr(filepath, bits, ehdr)
+    shdrtbl = readShdr(filepath, bits, ehdr)
     print("==== Section Header List ====")
     for i in range(ehdr.e_shnum):
-        print("{}: {}".format(i, readstr(filepath, shdrtable[ehdr.e_shstrndx].sh_offset, shdrtable[i].sh_name).decode('utf-8')))
+        print("{}: {}".format(i, readstr(filepath, shdrtbl[ehdr.e_shstrndx].sh_offset, shdrtbl[i].sh_name).decode('utf-8')))
+    stripelf(filepath, ehdr, shdrtbl)
     
