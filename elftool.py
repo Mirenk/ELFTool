@@ -5,7 +5,7 @@ import io
 class ELFToolError(Exception):
     pass
 
-def checkelf(filepath):
+def checkELF(filepath):
     with open(filepath, "rb") as f:
         # Check ELF Magic
         magic = f.read(5)
@@ -32,41 +32,32 @@ def readEhdr(filepath, bits):
     buffer.readinto(ehdr)
     return ehdr
         
-def readShdr(filepath, bits, ehdr):
-    shdrtable = []
-    if bits != 32 and bits != 64:
+# For Section Header Table and Program Header Table
+def readHdrTable(filepath, bits, type, offset, size):
+    table = []
+    if bits != 32 and bits != 64 and type != 'Shdr' and type != 'Phdr':
         raise ELFToolError('readShdr: Invalid parameter')
     with open(filepath, "rb") as f:
-        f.seek(ehdr.e_shoff)
+        f.seek(offset)
         for i in range(ehdr.e_shnum):
             if bits == 32:
-                shdr = Elf32_Shdr()
-            else:
-                shdr = Elf64_Shdr()
-            buffer = io.BytesIO(f.read(ehdr.e_shentsize))
-            buffer.readinto(shdr)
-            shdrtable.append(shdr)
-            del shdr
-    return shdrtable
+                if type == 'Shdr':
+                    hdr = Elf32_Shdr()
+                elif type == 'Phdr':
+                    hdr = Elf32_Phdr()
+            elif bits == 64:
+                if type == 'Shdr':
+                    hdr = Elf64_Shdr()
+                elif type == 'Phdr':
+                    hdr = Elf64_Phdr()
+            buffer = io.BytesIO(f.read(size))
+            buffer.readinto(hdr)
+            table.append(hdr)
+            del hdr
+    return table
 
-def readPhdr(filepath, bits, ehdr):
-    phdrtable = []
-    if bits != 32 and bits != 64:
-        raise ELFToolError('readPhdr: Invalid parameter')
-    with open(filepath, "rb") as f:
-        f.seek(ehdr.e_phoff)
-        for i in range(ehdr.e_shnum):
-            if bits == 32:
-                phdr = Elf32_Phdr()
-            else:
-                phdr = Elf64_Phdr()
-            buffer = io.BytesIO(f.read(ehdr.e_shentsize))
-            buffer.readinto(phdr)
-            phdrtable.append(phdr)
-            del phdr
-    return phdrtable
-
-def readstr(filepath, offset, index):
+# For string table(e.g. .dynstr, .shstrtab)
+def readStr(filepath, offset, index):
     if index == 0:
         return b''
     with open(filepath, "rb") as f:
@@ -80,7 +71,7 @@ def readstr(filepath, offset, index):
                 break
     return string
 
-def stripelf(filepath, ehdr, shdrtbl):
+def stripELF(filepath, ehdr, shtab):
     with open(filepath, "rb") as f:
         # ELF Header
         buffer = f.read(ehdr.e_ehsize)
@@ -88,28 +79,28 @@ def stripelf(filepath, ehdr, shdrtbl):
             elfheader.write(buffer)
         # Program Header Table
         buffer = f.read(ehdr.e_phentsize * ehdr.e_phnum)
-        with open(filepath + '_phdrtbl', "wb") as phdrtbl:
-            phdrtbl.write(buffer)
+        with open(filepath + '_phtab', "wb") as phtab:
+            phtab.write(buffer)
         # Sections
         for i in range(1, ehdr.e_shnum):
-            buffer = f.read(shdrtbl[i].sh_size)
-            with open(filepath + '_' + readstr(filepath, shdrtbl[ehdr.e_shstrndx].sh_offset, shdrtbl[i].sh_name).decode('utf-8'), "wb") as section:
+            buffer = f.read(shtab[i].sh_size)
+            with open(filepath + '_' + readStr(filepath, shtab[ehdr.e_shstrndx].sh_offset, shtab[i].sh_name).decode('utf-8'), "wb") as section:
                 section.write(buffer)
         # Section Header Table
         buffer = f.read(ehdr.e_shentsize * ehdr.e_shnum)
-        with open(filepath + '_shdrtbl', "wb") as shdrtbl:
-            shdrtbl.write(buffer)    
+        with open(filepath + '_shtab', "wb") as shtab:
+            shtab.write(buffer)    
 
 if __name__ == "__main__":
     print("path?")
     while True:
         filepath = input()
         try:
-            bits = checkelf(filepath)
+            bits = checkELF(filepath)
             break
         except FileNotFoundError:
             print("File not found. Try again.")
     ehdr = readEhdr(filepath, bits)
-    shdrtbl = readShdr(filepath, bits, ehdr)
-    stripelf(filepath, ehdr, shdrtbl)
+    shtab = readHdrTable(filepath, bits, 'Shdr', ehdr.e_shoff, ehdr.e_shentsize)
+    stripELF(filepath, ehdr, shtab)
     
